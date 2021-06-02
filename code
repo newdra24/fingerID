@@ -1,0 +1,86 @@
+let handpose;
+let video;
+let predictions = [];
+
+function setup() {
+  createCanvas(640, 480);
+  video = createCapture(VIDEO);
+  video.size(width, height);
+
+  handpose = ml5.handpose(video, modelReady);
+
+  // This sets up an event that fills the global variable "predictions"
+  // with an array every time new hand poses are detected
+  handpose.on("predict", (results) => {
+    console.log(results);
+    predictions = results;
+  });
+
+  // Hide the video element, and just show the canvas
+  video.hide();
+}
+
+function modelReady() {
+  console.log("Model ready!");
+}
+
+function draw() {
+  image(video, 0, 0, width, height);
+  
+  fill(255);
+  rect(0, 0, 200, 50);
+  fill(0);
+  text('What finger am  I holding up?', 10, 10);
+
+  if (predictions.length > 0) {
+    let hand = predictions[0];
+    let thumb = hand.annotations.thumb;
+    let index = hand.annotations.indexFinger;
+    let middle = hand.annotations.middleFinger;
+    let ring = hand.annotations.ringFinger;
+
+    let indexTip = index[3];
+    let indexMid = index[1];
+    let middleTip = middle[3];
+    let middleMid = middle[1];
+    let ringTip = ring[3];
+    let ringMid = ring[1];
+    let pinkyTip = pinkyF[3];
+    let pinkyMid = pinkyF[1];
+
+    let mode;
+    
+    fill(0, 0, 255);
+    if (indexTip[1] < indexMid[1]) {
+      mode = 1;
+    }
+    if (middleTip[1] < middleMid[1]) {
+      mode = 2;
+    }
+    if (ringTip[1] < ringMid[1]) {
+      mode = 3;
+    }
+    if (pinkyTip[1] < pinkyMid[1]) {
+      mode = 4;
+    }
+
+    switch (mode) {
+      case 1:
+        text("INDEX",10,30);
+        break;
+      case 2:
+        text("MIDDLE",10,30);
+        break;
+      case 3:
+        text("RING",10,30);
+        break;
+      case 4:
+        text("PINKY",10,30);
+        break;
+      default:
+        text("NONE", 10,30);
+        break;
+    }
+    
+  }
+}
